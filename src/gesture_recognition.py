@@ -15,24 +15,31 @@ cap = cv2.VideoCapture(0)
 
 # Define a function to interpret basic gestures
 def interpret_gesture(landmarks):
+    """
+    Interpret Basic Gestures
+
+    ::landmarks:: detected hand points
+    """
     # Convert normalized landmarks to a more usable form
     points = [(landmark.x, landmark.y, landmark.z) for landmark in landmarks.landmark]
 
     # Example 1: "Thumbs Up"
+    # Ensure tip of thumb is vertically higher than middle and base joints
+    # Verifies base of index finger is higher than middle joint
     if points[mp_hands.HandLandmark.THUMB_TIP][1] < points[mp_hands.HandLandmark.THUMB_IP][1] < points[mp_hands.HandLandmark.THUMB_MCP][1]:
         if points[mp_hands.HandLandmark.INDEX_FINGER_MCP][1] < points[mp_hands.HandLandmark.INDEX_FINGER_PIP][1]:
             return "Thumbs Up"
 
     # Example 2: "Fist" (All fingers folded)
+    # If all finger MCP joints are vertically above their respective PIP joints
     if all(points[i][1] > points[i + 1][1] for i in [mp_hands.HandLandmark.INDEX_FINGER_MCP, 
                                                      mp_hands.HandLandmark.MIDDLE_FINGER_MCP,
                                                      mp_hands.HandLandmark.RING_FINGER_MCP,
                                                      mp_hands.HandLandmark.PINKY_MCP]):
         return "Fist"
 
-    # More gestures can be added here
-
-    return None  # Return None if no gesture is recognized
+    # If no gesture recognized
+    return None
 
 while cap.isOpened():
     success, frame = cap.read()
@@ -40,9 +47,9 @@ while cap.isOpened():
         print("Ignoring empty camera frame.")
         continue
 
-    # Flip and convert the frame for MediaPipe processing
-    frame = cv2.flip(frame, 1)
-    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    # Captures frames from webcam
+    frame = cv2.flip(frame, 1) # Flip camera which is more intuitive for hand tracking
+    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) # To RBG
     results = hands.process(rgb_frame)
 
     # Draw hand landmarks, recognize gestures, and display confidence
