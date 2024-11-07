@@ -8,12 +8,31 @@ hands = mp_hands.Hands(static_image_mode=False,
                        max_num_hands=1,
                        min_detection_confidence=0.5,
                        min_tracking_confidence=0.5)
-
-# Initialize MediaPipe drawing utilities for visualizing landmarks
 mp_drawing = mp.solutions.drawing_utils
 
 # Open a connection to the webcam
 cap = cv2.VideoCapture(0)
+
+# Define a function to interpret basic gestures
+def interpret_gesture(landmarks):
+    # Convert normalized landmarks to a more usable form
+    points = [(landmark.x, landmark.y, landmark.z) for landmark in landmarks.landmark]
+
+    # Example 1: "Thumbs Up"
+    if points[mp_hands.HandLandmark.THUMB_TIP][1] < points[mp_hands.HandLandmark.THUMB_IP][1] < points[mp_hands.HandLandmark.THUMB_MCP][1]:
+        if points[mp_hands.HandLandmark.INDEX_FINGER_MCP][1] < points[mp_hands.HandLandmark.INDEX_FINGER_PIP][1]:
+            return "Thumbs Up"
+
+    # Example 2: "Fist" (All fingers folded)
+    if all(points[i][1] > points[i + 1][1] for i in [mp_hands.HandLandmark.INDEX_FINGER_MCP, 
+                                                     mp_hands.HandLandmark.MIDDLE_FINGER_MCP,
+                                                     mp_hands.HandLandmark.RING_FINGER_MCP,
+                                                     mp_hands.HandLandmark.PINKY_MCP]):
+        return "Fist"
+
+    # More gestures can be added here
+
+    return None  # Return None if no gesture is recognized
 
 while cap.isOpened():
     success, frame = cap.read()
@@ -21,25 +40,26 @@ while cap.isOpened():
         print("Ignoring empty camera frame.")
         continue
 
-    # Flip the frame horizontally for a mirror view
+    # Flip and convert the frame for MediaPipe processing
     frame = cv2.flip(frame, 1)
-    # Convert the BGR frame to RGB for MediaPipe processing
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-    # Process the frame to find hands
     results = hands.process(rgb_frame)
 
-    # Draw hand landmarks if any hands are detected
+    # Draw hand landmarks, recognize gestures, and display confidence
     if results.multi_hand_landmarks:
-        for hand_landmarks in results.multi_hand_landmarks:
-            # Draw the landmarks on the frame
+        for hand_landmarks, handedness in zip(results.multi_hand_landmarks, results.multi_handedness):
             mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
-            # Example: Print coordinates of the index finger tip
-            index_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
-            print(f"Index Finger Tip: ({index_finger_tip.x}, {index_finger_tip.y})")
+            # Get the recognized gesture
+            gesture = interpret_gesture(hand_landmarks)
+            confidence = handedness.classification[0].score  # Get the confidence score
+            if gesture:
+                # Display the gesture and confidence on the frame
+                cv2.putText(frame, f"Gesture: {gesture}, Confidence: {confidence:.2f}", 
+                            (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+                print(f"Detected gesture: {gesture} with confidence: {confidence:.2f}")
 
-    # Display the frame
+    # Display the frame with landmarks and gesture text
     cv2.imshow("Hand Gesture Recognition", frame)
 
     # Press 'q' to exit
