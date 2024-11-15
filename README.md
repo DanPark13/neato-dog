@@ -90,7 +90,9 @@ The FSM for this project includes the following components:
 
 The FSM implemented within the ROS2 node that handles gesture recognition and robot control. When a gesture is identified on the camera, the node publishes velocity commands to the `/cmd_vel` ROS2 topic using the `Twist` message. If a thumbs-up is shown, then the robot moves forward. If a thumbs-down is shown, then the robot moves backwards. If a fist is shown, then the robot stops moving.
 
-**Include video of robot working**
+|                                 ![hand landmarks](img/fsc.gif)                                 |
+| :-----------------------------------------------------------------------------------------------------------------------: |
+| _Fig 5. Working moving Neato with Hand Gestures_ |
 
 ## Possible Improvements
 
