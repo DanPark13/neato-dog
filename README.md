@@ -14,10 +14,6 @@ The project leverages MediaPipe’s hand tracking module to detect and track han
 | :-----------------------------------------------------------------------------------------------------------------------: |
 | _Fig 1. Diagram of a [MediaPipe](https://developers.google.com/mediapipe/solutions/vision/hand_landmarker) hand landmark_ |
 
-In real time using OpenCV, the hand marking detection looks like the following:
-
-**Please insert gif of hand here**
-
 ## Gesture Recognition
 
 The core of the project lies in the gesture recognition, which analyzes the positional relationships of the 21 detected hand landmarks to identify predefined gestures. The `interpret_gesture` utilizes MediaPipe's hand tracking module to extract the normalized coordinates of key hand point landmark.
@@ -43,13 +39,17 @@ For a thumbs up, the key joints to look at are the following
 
 In the implementation, the tip of the thumb (`THUMB_TIP`) is vertically higher, represented by a lower `y` value, than its intermediate joints (`THUMB_IP`, `THUMB_MCP`). Additionally, the index finger base (`INDEX_FINGER_MCP`) must be above its middle joint (`INDEX_FINGER_PIP`).
 
-**Please insert gif of thumbs up here**
+|                                 ![hand landmarks](img/thumbs-up.png)                                 |
+| :-----------------------------------------------------------------------------------------------------------------------: |
+| _Fig 2. Thumbs Up Gesture on Camera_ |
 
 #### Thumbs Down
 
 The thumbs down interaction is mirrored to the thumbs up, but instead the tip of the thumb is vertically lower, represented by a higher `y` value, than the intermediate joints. The index finger condition remains the same. 
 
-**Please insert gif of thumbs down here**
+|                                 ![hand landmarks](img/thumbs-down.png)                                 |
+| :-----------------------------------------------------------------------------------------------------------------------: |
+| _Fig 3. Thumbs Down Gesture on Camera_ |
 
 #### Fist
 
@@ -59,7 +59,9 @@ For a fist position, the key joints to look at are the following
 
 A fist is best represented by the knuckles peering through, so the implmentation has the base of the finger joints represented as `MCP` and the middle joint represented by `PIP` need to align so that the `MCP` is vertically higher than the `PIP`.
 
-**Please insert gif of fist here**
+|                                 ![hand landmarks](img/fist.png)                                 |
+| :-----------------------------------------------------------------------------------------------------------------------: |
+| _Fig 4. Fist Gesture on Camera_ |
 
 ## Finite State Machine Implementation
 
@@ -85,8 +87,6 @@ The FSM for this project includes the following components:
 - Idle -> Stopped: On detecting a fist or open-hand gesture.
 - Forward -> Stopped: On detecting a fist or open-hand gesture.
 - Backward -> Stopped: On detecting a fist or open-hand gesture.
-
-**Create FSM loop diagram**
 
 The FSM implemented within the ROS2 node that handles gesture recognition and robot control. When a gesture is identified on the camera, the node publishes velocity commands to the `/cmd_vel` ROS2 topic using the `Twist` message. If a thumbs-up is shown, then the robot moves forward. If a thumbs-down is shown, then the robot moves backwards. If a fist is shown, then the robot stops moving.
 
